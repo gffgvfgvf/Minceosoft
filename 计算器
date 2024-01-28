@@ -1,0 +1,106 @@
+// 获取计算器的元素
+const calculator = document.querySelector('.calculator')
+const display = calculator.querySelector('.calculator__display')
+const keys = calculator.querySelector('.calculator__keys')
+
+// 定义一个计算函数，根据操作符和两个操作数，返回计算结果
+const calculate = (n1, operator, n2) => {
+  let result = 0
+  if (operator === 'add') {
+    result = parseFloat(n1) + parseFloat(n2)
+  } else if (operator === 'subtract') {
+    result = parseFloat(n1) - parseFloat(n2)
+  } else if (operator === 'multiply') {
+    result = parseFloat(n1) * parseFloat(n2)
+  } else if (operator === 'divide') {
+    result = parseFloat(n1) / parseFloat(n2)
+  }
+  return result
+}
+
+// 监听按键的点击事件
+keys.addEventListener('click', e => {
+  // 如果点击的是一个按钮，执行以下操作
+  if (e.target.matches('button')) {
+    // 获取按键的内容和类型
+    const key = e.target
+    const action = key.dataset.action
+    const keyContent = key.textContent
+    // 获取显示屏的内容和状态
+    const displayedNum = display.textContent
+    const previousKeyType = calculator.dataset.previousKeyType
+    // 如果按键是一个数字键
+    if (!action) {
+      // 如果显示屏是0或者上一个按键是操作符，替换显示屏的内容为按键的内容
+      if (displayedNum === '0' || previousKeyType === 'operator') {
+        display.textContent = keyContent
+      // 否则，在显示屏的内容后面追加按键的内容
+      } else {
+        display.textContent = displayedNum + keyContent
+      }
+      // 更新计算器的状态为数字键
+      calculator.dataset.previousKeyType = 'number'
+    }
+    // 如果按键是一个小数点键
+    if (action === 'decimal') {
+      // 如果显示屏没有小数点，或者上一个按键是操作符，追加一个小数点到显示屏的内容后面
+      if (!displayedNum.includes('.') || previousKeyType === 'operator') {
+        display.textContent = displayedNum + '.'
+      }
+      // 更新计算器的状态为小数点键
+      calculator.dataset.previousKeyType = 'decimal'
+    }
+    // 如果按键是一个操作符键
+    if (
+      action === 'add' ||
+      action === 'subtract' ||
+      action === 'multiply' ||
+      action === 'divide'
+    ) {
+      // 获取第一个操作数和第二个操作数
+      const firstValue = calculator.dataset.firstValue
+      const secondValue = displayedNum
+      // 获取上一个操作符
+      const previousOperator = calculator.dataset.operator
+      // 如果已经有第一个操作数和上一个操作符，执行计算函数，并显示结果
+      if (firstValue && previousOperator) {
+        const result = calculate(firstValue, previousOperator, secondValue)
+        display.textContent = result
+        // 更新第一个操作数为计算结果
+        calculator.dataset.firstValue = result
+      // 否则，将显示屏的内容作为第一个操作数
+      } else {
+        calculator.dataset.firstValue = displayedNum
+      }
+      // 更新计算器的状态为操作符键，并记录当前的操作符
+      calculator.dataset.previousKeyType = 'operator'
+      calculator.dataset.operator = action
+    }
+    // 如果按键是一个等号键
+    if (action === 'calculate') {
+      // 获取第一个操作数和第二个操作数
+      const firstValue = calculator.dataset.firstValue
+      const secondValue = displayedNum
+      // 获取当前的操作符
+      const operator = calculator.dataset.operator
+      // 如果已经有第一个操作数和当前的操作符，执行计算函数，并显示结果
+      if (firstValue && operator) {
+        const result = calculate(firstValue, operator, secondValue)
+        display.textContent = result
+        // 清除第一个操作数和当前的操作符
+        calculator.dataset.firstValue = ''
+        calculator.dataset.operator = ''
+      }
+      // 更新计算器的状态为等号键
+      calculator.dataset.previousKeyType = 'calculate'
+    }
+    // 如果按键是一个清除键
+    if (action === 'clear') {
+      // 清空显示屏的内容和计算器的状态
+      display.textContent = '0'
+      calculator.dataset.firstValue = ''
+      calculator.dataset.operator = ''
+      calculator.dataset.previousKeyType = ''
+    }
+  }
+})
